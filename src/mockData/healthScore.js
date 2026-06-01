@@ -1,0 +1,30 @@
+export const todayScore = 74
+export const todayStatus = 'watch'
+
+export const trend = [
+  { date: 'May 3', score: 68 },
+  { date: 'May 5', score: 72 },
+  { date: 'May 6', score: 71 },
+  { date: 'May 7', score: 75 },
+  { date: 'May 9', score: 69 },
+  { date: 'May 10', score: 73 },
+  { date: 'May 12', score: 70 },
+  { date: 'May 13', score: 74 },
+  { date: 'May 14', score: 71 },
+  { date: 'May 15', score: 76 },
+  { date: 'May 16', score: 78 },
+  { date: 'May 18', score: 65 },
+  { date: 'May 19', score: 67 },
+  { date: 'May 20', score: 63 },
+  { date: 'May 21', score: 68 },
+  { date: 'May 22', score: 66 },
+  { date: 'May 23', score: 73 },
+  { date: 'May 25', score: 76 },
+  { date: 'May 26', score: 79 },
+  { date: 'May 27', score: 77 },
+  { date: 'May 28', score: 75 },
+  { date: 'May 29', score: 72 },
+  { date: 'May 30', score: 74 },
+  { date: 'May 31', score: 76 },
+  { date: 'Jun 1', score: 74 },
+]

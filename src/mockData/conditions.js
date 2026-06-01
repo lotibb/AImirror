@@ -1,0 +1,32 @@
+export const conditions = [
+  {
+    id: 1,
+    name: 'Forward Head Posture',
+    region: 'Upper Body',
+    firstSeen: 'Mar 5, 2026',
+    status: 'watch',
+    scans: 18,
+    trend: 'stable',
+    description: 'Consistent anterior displacement of the head relative to the shoulder line detected across multiple scans.',
+  },
+  {
+    id: 2,
+    name: 'Mild Eczema',
+    region: 'Left Forearm',
+    firstSeen: 'Apr 12, 2026',
+    status: 'watch',
+    scans: 9,
+    trend: 'improving',
+    description: 'Recurring dry, itchy patches on the inner left forearm. Some improvement noted in recent scans.',
+  },
+  {
+    id: 3,
+    name: 'Dark Circles',
+    region: 'Face',
+    firstSeen: 'May 20, 2026',
+    status: 'alert',
+    scans: 4,
+    trend: 'worsening',
+    description: 'Pronounced periorbital darkening under both eyes, likely related to sleep quality and possible nutritional deficiency.',
+  },
+]

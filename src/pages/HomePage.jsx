@@ -17,6 +17,7 @@ const CONDITION_STATUS = {
 export default function HomePage() {
   const navigate = useNavigate()
   const s = STATUS_COLOR[todayStatus] || STATUS_COLOR.watch
+  const todayLabel = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
   return (
     <div className="min-h-full bg-gray-50">
@@ -47,7 +48,7 @@ export default function HomePage() {
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-dark text-sm">Today's Status</h2>
-            <span className="text-xs text-gray-400">Jun 1, 2026</span>
+            <span className="text-xs text-gray-400">{todayLabel}</span>
           </div>
           <div className="flex items-center gap-4">
             <div className={`w-16 h-16 rounded-full ${s.bg} border-4 ${s.ring} flex items-center justify-center shrink-0`}>

@@ -7,159 +7,209 @@ export const REGIONS = [
   { id: 'fullBody', label: 'Full Body' },
 ]
 
-export const PROMPTS = {
-  face: `Analyze this face image for visible health indicators. Look for:
-- Skin conditions (redness, dryness, blemishes, discoloration)
-- Signs of fatigue (dark circles, puffiness)
-- Stress indicators and general skin health
+const buildPrompt = (regionLabel) =>
+  `You are a health-screening AI assistant. Analyze the provided photo for visible wellness indicators. This is a non-diagnostic screening tool — not a medical device.
 
-Provide a structured response with these sections:
-**Overall Status**: (Good / Watch / Alert)
-**Observations**: Bullet list of what you see
-**Recommendations**: Actionable health tips based on your findings`,
+STEP 1 — IDENTIFY THE REGION:
+Look at the image and determine what body part is actually visible. The user selected "${regionLabel}". If the image clearly shows a different region, note the mismatch but proceed with analyzing what you actually see — never refuse to analyze.
 
-  upperBody: `Analyze this upper body image for health indicators. Look for:
-- Posture alignment (head, shoulders, spine)
-- Visible skin conditions
-- Signs of tension or discomfort
+STEP 2 — COMPREHENSIVE ANALYSIS of the region you identified:
 
-Provide a structured response:
-**Overall Status**: (Good / Watch / Alert)
-**Observations**: Bullet list of what you see
-**Recommendations**: Actionable health tips`,
+PHYSICAL & SKIN HEALTH:
+- Skin tone, texture, redness, dryness, lesions, rashes, discoloration, swelling, wounds, bruises, burns, asymmetry
+- Structural alignment, posture, joint appearance
 
-  lowerBody: `Analyze this lower body image for health indicators. Look for:
-- Posture and alignment of lower limbs
-- Visible skin conditions
-- Signs of swelling or circulatory concerns
+INFECTION & PATHOGEN INDICATORS (be specific when signs are present):
+- Bacterial: localized redness, warmth patterns, pus, cellulitis-like spread, wound infection signs
+- Viral: vesicular clusters, ring rashes, perioral/perinasal lesions, unusual discoloration patterns
+- Fungal: ring-shaped lesions, white patches, nail thickening or discoloration, powdery or flaky scaling
+- Parasitic: track or burrow marks, unusual bite clusters, subcutaneous nodules, linear inflammation
 
-Provide a structured response:
-**Overall Status**: (Good / Watch / Alert)
-**Observations**: Bullet list
-**Recommendations**: Actionable tips`,
+INJURY & STRUCTURAL CONCERNS:
+- Cuts, abrasions, contusions, burns, edema, deformity, malalignment
 
-  skinPatch: `Analyze this skin patch image carefully. Look for:
-- Color irregularities, redness, or discoloration
-- Texture changes (rough, scaly, raised)
-- Signs of irritation, infection, or dermatological concern
+PSYCHOLOGICAL & EMOTIONAL STATE (apply whenever a face or meaningful body language is visible):
+- Facial expression, eye appearance, visible muscle tension in face or neck
+- Emotional indicators: stress, anxiety, fatigue, calm, sadness, happiness, distress
 
-Provide:
-**Overall Status**: (Good / Watch / Alert)
-**Observations**: Detailed bullet list
-**Recommendations**: Next steps (topical care, monitoring, or professional consultation)`,
+STEP 3 — RESPOND using these exact section headers in this exact order:
 
-  hand: `Analyze this hand image for health indicators. Look for:
-- Nail health (color, texture, growth)
-- Skin condition (dryness, redness, lesions)
-- Visible joint concerns and circulation indicators
+**Region Detected**: [body part you actually see]
+[Include ONLY if mismatch: **⚠ Region Mismatch**: User selected ${regionLabel} but image shows [X]. Analysis based on what was detected.]
 
-Provide:
-**Overall Status**: (Good / Watch / Alert)
-**Observations**: Bullet list
-**Recommendations**: Care tips`,
+**Overall Status**: [Good / Watch / Alert]
 
-  fullBody: `Analyze this full body image for overall health indicators. Look for:
-- Overall posture and body alignment
-- Visible skin conditions
-- Signs of inflammation or asymmetry
+**Physical Findings**:
+- [specific observations, or "No significant abnormalities detected"]
 
-Provide:
-**Overall Status**: (Good / Watch / Alert)
-**Observations**: Bullet list of key findings
-**Recommendations**: Actionable wellness suggestions`,
-}
+**Infection & Pathogen Indicators**:
+- [specific observations per pathogen type, or "No signs of active infection detected"]
+
+**Psychological State**:
+- [emotional state and observable cues, or "Not applicable — no face or body language visible"]
+
+**Recommendations**:
+- [specific, actionable health tips based on your findings]
+- [include professional consultation recommendation if anything is Watch or Alert]
+
+Important: This is a visual wellness screening only, not a medical diagnosis. Always recommend consulting a healthcare professional for any concerning findings.`
+
+export const PROMPTS = Object.fromEntries(
+  REGIONS.map(r => [r.id, buildPrompt(r.label)])
+)
 
 export const MOCK_RESPONSES = {
-  face: `**Overall Status**: Watch
+  face: `**Region Detected**: Face
 
-**Observations**:
-- Mild periorbital darkening (under-eye circles) bilaterally
-- Slight redness on left cheek, possibly from irritation
-- Skin texture appears normal with adequate hydration
-- No significant blemishes or lesions detected
-- Minor signs of fatigue in facial expression
+**Overall Status**: Watch
 
-**Recommendations**:
-- Ensure 7–8 hours of quality sleep nightly
-- Apply a cold compress to reduce puffiness
-- Consider iron and vitamin C rich foods
-- Use SPF 30+ moisturizer daily
-- Stay hydrated (minimum 2L water/day)`,
+**Physical Findings**:
+- Mild periorbital darkening (under-eye circles) present bilaterally
+- Slight redness on left cheek — possible contact irritation or early rosacea
+- Skin hydration appears adequate; no significant dryness or scaling
+- Minor puffiness noted around the lower eyelid area
 
-  upperBody: `**Overall Status**: Watch
+**Infection & Pathogen Indicators**:
+- No signs of bacterial infection (no spreading redness, pus, or warmth patterns)
+- No vesicular clusters suggestive of viral infection (herpes simplex, etc.)
+- No ring-shaped or scaly lesions indicative of fungal presence
+- No parasitic indicators detected
 
-**Observations**:
-- Forward head posture detected (~3cm anterior displacement)
-- Rounded shoulders bilaterally
-- Slight asymmetry in shoulder height (right 1.5cm higher)
-- No visible skin abnormalities on upper body
-- Muscle tension visible in trapezius area
+**Psychological State**:
+- Expression suggests mild fatigue — slightly drooping eyelids and reduced periorbital tone
+- Mild stress indicators present: subtle frontalis tension and a slightly furrowed brow
+- Overall demeanor: calm but tired; no signs of acute distress
 
 **Recommendations**:
-- Practice chin tucks (10 reps × 3 daily)
-- Strengthen posterior shoulder muscles
-- Take posture breaks every 45 minutes
-- Consider ergonomic workstation adjustment
-- Thoracic spine mobility exercises recommended`,
+- Prioritize 7–8 hours of quality sleep; fatigue is visibly affecting periorbital health
+- Apply a cold compress in the mornings to reduce puffiness
+- Consider iron and vitamin C supplementation for under-eye improvement
+- Use SPF 30+ moisturizer; mild cheek redness benefits from a gentle barrier cream
+- If redness spreads or worsens, consult a dermatologist`,
 
-  lowerBody: `**Overall Status**: Good
+  upperBody: `**Region Detected**: Upper Body
 
-**Observations**:
+**Overall Status**: Watch
+
+**Physical Findings**:
+- Forward head posture detected (~3 cm anterior displacement)
+- Rounded shoulders bilaterally — consistent with prolonged sitting or screen use
+- Slight shoulder height asymmetry (right side elevated ~1.5 cm)
+- No visible skin abnormalities on exposed upper body areas
+
+**Infection & Pathogen Indicators**:
+- No signs of active infection on visible skin areas
+- No rashes, lesions, or pathogen indicators detected
+
+**Psychological State**:
+- Posture pattern (forward collapse, shoulder rounding) is a recognized physical marker of chronic stress or fatigue
+- Visible tension in the trapezius and neck region suggests sustained muscular stress response
+- Body language is slightly closed — may reflect guardedness or low energy
+
+**Recommendations**:
+- Practice chin tucks (10 reps × 3 daily) to correct forward head position
+- Strengthen posterior shoulder muscles with resistance band rows
+- Take a posture break and stand up every 45 minutes during desk work
+- Adjust workstation ergonomics — screen at eye level, chair at 90°
+- Breathwork or progressive muscle relaxation may help release trapezius tension linked to stress`,
+
+  lowerBody: `**Region Detected**: Lower Body
+
+**Overall Status**: Good
+
+**Physical Findings**:
 - Lower limb alignment appears within normal range
 - No visible swelling in ankles or knees
-- Skin tone consistent and healthy-looking
-- No visible varicosities or circulatory concerns
-- Hip alignment appears symmetrical
+- Skin tone consistent and healthy in appearance
+- No visible varicosities or circulatory discoloration
+
+**Infection & Pathogen Indicators**:
+- No bacterial infection signs — no spreading redness or warmth patterns visible
+- No fungal indicators — skin in visible areas appears clear with no scaling
+- No parasitic indicators detected
+
+**Psychological State**:
+- Not applicable — no face or body language visible
 
 **Recommendations**:
-- Maintain current activity levels
-- Elevate legs periodically if sitting for long periods
-- Continue regular stretching of hip flexors
-- Wear supportive footwear`,
+- Lower body health appears good; maintain current activity level
+- Elevate legs periodically if sitting for extended periods to support circulation
+- Continue regular stretching of hip flexors and calves
+- Wear supportive footwear to maintain healthy alignment`,
 
-  skinPatch: `**Overall Status**: Alert
+  skinPatch: `**Region Detected**: Skin Patch
 
-**Observations**:
-- Irregular border pattern on the observed patch
-- Mixed coloration: areas of redness with central pallor
+**Overall Status**: Alert
+
+**Physical Findings**:
+- Irregular border pattern observed on the lesion
+- Mixed coloration: central pallor surrounded by redness (~1.5–2 cm diameter)
 - Slightly raised texture compared to surrounding skin
-- Approximate diameter: 1.5–2 cm
 - No visible bleeding or weeping
 
-**Recommendations**:
-- Do not scratch or irritate the area
-- Keep the area clean and dry
-- Monitor for changes in size or color over the next 7 days
-- **Consult a dermatologist** — this pattern warrants professional evaluation
-- Photograph and document any changes`,
+**Infection & Pathogen Indicators**:
+- Border irregularity and color variation warrant dermatological evaluation — cannot rule out pathogenic origin
+- Pattern is not consistent with a typical fungal ring lesion (lacks the clear peripheral scaling)
+- Viral etiology possible — some HPV-related or molluscum presentations share these features
+- Bacterial infection cannot be excluded if warmth or pain is present (not visually assessable)
 
-  hand: `**Overall Status**: Good
-
-**Observations**:
-- Nail beds show healthy pink coloration
-- No visible clubbing or discoloration of nails
-- Skin appears slightly dry on knuckles
-- No visible joint swelling or deformity
-- Good capillary refill appearance
+**Psychological State**:
+- Not applicable — no face or body language visible
 
 **Recommendations**:
-- Apply hand moisturizer daily, especially after washing
-- Keep nails trimmed and clean
-- Increase omega-3 fatty acids for skin health
-- Stay hydrated`,
+- Do not scratch, squeeze, or irritate the area
+- Keep the area clean and dry; cover loosely if clothing may cause friction
+- Photograph and document any changes in size, border, or color
+- **Consult a dermatologist promptly** — the border irregularity and color pattern require professional assessment
+- If the area becomes painful, warm, or begins to spread, seek medical care urgently`,
 
-  fullBody: `**Overall Status**: Watch
+  hand: `**Region Detected**: Hand
 
-**Observations**:
-- Overall posture shows mild forward lean
+**Overall Status**: Good
+
+**Physical Findings**:
+- Nail beds show healthy pink coloration with no discoloration
+- Skin slightly dry on the knuckles; no cracking or fissures
+- No visible swelling or deformity in joints
+- Capillary appearance looks normal
+
+**Infection & Pathogen Indicators**:
+- No bacterial infection signs — no redness, pus, or warmth patterns around nail beds or skin
+- No viral indicators — no wart-like formations or periungual lesions detected
+- No fungal indicators — nails appear normal in thickness and color
+- No parasitic indicators detected
+
+**Psychological State**:
+- Not applicable — no face or body language visible
+
+**Recommendations**:
+- Apply hand moisturizer daily, especially after washing, to address knuckle dryness
+- Keep nails trimmed and clean to prevent bacterial accumulation under the nail
+- Increase omega-3 fatty acid intake for improved skin barrier function
+- Stay well hydrated — mild knuckle dryness often reflects systemic hydration needs`,
+
+  fullBody: `**Region Detected**: Full Body
+
+**Overall Status**: Watch
+
+**Physical Findings**:
+- Overall posture shows mild anterior lean and forward head position
 - Slight left-right asymmetry in shoulder and hip alignment
-- No visible acute skin concerns
-- Body proportions appear healthy
-- Stance shows slight weight shift to right side
+- No visible acute skin concerns on exposed areas
+- Stance shows slight weight shift to the right side
+
+**Infection & Pathogen Indicators**:
+- No visible signs of infection on exposed skin areas
+- No rashes or lesions detected at this scale
+
+**Psychological State**:
+- Posture pattern (forward lean, shoulder rounding, uneven stance) suggests chronic fatigue or low-grade stress
+- Weight shift and closed body language may indicate low energy or emotional withdrawal
+- Overall demeanor: neutral to fatigued; no signs of acute psychological distress
 
 **Recommendations**:
-- Daily posture assessment and correction exercises
-- Core strengthening routine (3× weekly)
-- Balance exercises to address lateral asymmetry
-- Consider assessment by a physical therapist for alignment`,
+- Daily posture correction exercises and core strengthening (3× weekly)
+- Balance exercises to address the lateral weight shift asymmetry
+- Consider breathwork or mindfulness practice to address the stress indicators reflected in posture
+- A physical therapist evaluation would help identify the root cause of the alignment asymmetry`,
 }

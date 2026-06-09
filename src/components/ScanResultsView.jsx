@@ -1,33 +1,53 @@
 import { useState } from 'react'
 
+const SECTION_HEADER_RE = /^\*\*[^*]+\*\*:\s*$/
+
+function renderBold(str) {
+  return str.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
+    part.startsWith('**') && part.endsWith('**')
+      ? <strong key={j} className="font-semibold text-dark">{part.slice(2, -2)}</strong>
+      : <span key={j}>{part}</span>
+  )
+}
+
 function FormattedText({ text }) {
   if (!text) return null
   return (
     <div className="space-y-1">
       {text.split('\n').map((line, i) => {
-        if (!line.trim()) return <div key={i} className="h-1" />
-        const isBullet = line.startsWith('- ')
-        const parts = line.split(/(\*\*[^*]+\*\*)/g)
-        const rendered = parts.map((part, j) =>
-          part.startsWith('**') && part.endsWith('**')
-            ? <strong key={j} className="font-semibold text-dark">{part.slice(2, -2)}</strong>
-            : <span key={j}>{part}</span>
-        )
-        if (isBullet) {
-          const bulletParts = line.slice(2).split(/(\*\*[^*]+\*\*)/g)
-          const bulletRendered = bulletParts.map((part, j) =>
-            part.startsWith('**') && part.endsWith('**')
-              ? <strong key={j} className="font-semibold text-dark">{part.slice(2, -2)}</strong>
-              : <span key={j}>{part}</span>
-          )
+        const trimmed = line.trim()
+        if (!trimmed) return <div key={i} className="h-1.5" />
+
+        // Mismatch warning line
+        if (trimmed.includes('⚠') || trimmed.toLowerCase().includes('region mismatch')) {
           return (
-            <div key={i} className="flex gap-2">
-              <span className="text-primary font-bold text-sm mt-0.5">•</span>
-              <span className="text-sm text-gray-700 flex-1">{bulletRendered}</span>
+            <div key={i} className="flex gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 my-1">
+              <span className="text-sm text-amber-700 flex-1">{renderBold(trimmed)}</span>
             </div>
           )
         }
-        return <p key={i} className="text-sm text-gray-700">{rendered}</p>
+
+        // Section header: entire line is **Label**:
+        if (SECTION_HEADER_RE.test(trimmed)) {
+          const label = trimmed.replace(/\*\*/g, '').replace(/:$/, '')
+          return (
+            <p key={i} className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-3 mb-0.5">
+              {label}
+            </p>
+          )
+        }
+
+        // Bullet
+        if (trimmed.startsWith('- ')) {
+          return (
+            <div key={i} className="flex gap-2">
+              <span className="text-primary font-bold text-sm mt-0.5">•</span>
+              <span className="text-sm text-gray-700 flex-1">{renderBold(trimmed.slice(2))}</span>
+            </div>
+          )
+        }
+
+        return <p key={i} className="text-sm text-gray-700">{renderBold(trimmed)}</p>
       })}
     </div>
   )
@@ -43,7 +63,7 @@ export default function ScanResultsView({ image, region, result, error, onScanAg
 
   return (
     <div className="min-h-full bg-gray-50 pb-4">
-      <div className="bg-primary px-4 pt-10 pb-4">
+      <div className="bg-primary px-4 pb-4 safe-top">
         <div className="flex items-center gap-3">
           {image && (
             <img src={image} alt="Scan" className="w-12 h-12 rounded-xl object-cover border-2 border-white/40" />

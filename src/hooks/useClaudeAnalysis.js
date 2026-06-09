@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react'
 import Anthropic from '@anthropic-ai/sdk'
 import { PROMPTS, MOCK_RESPONSES } from '../constants/prompts'
 
+// Baked into the build at deploy time (see .env). Lets anyone using the
+// deployed app run real analysis without entering their own key.
+const EMBEDDED_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY || ''
+
+// Claude supports these image media types; anything else (e.g. HEIC) won't work.
+const SUPPORTED_MEDIA = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+
 export function useClaudeAnalysis() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -11,8 +18,10 @@ export function useClaudeAnalysis() {
     setError(null)
 
     try {
-      const apiKey = localStorage.getItem('ma_api_key')
-      const demoMode = localStorage.getItem('ma_demo_mode') !== 'false' || !apiKey
+      // A user-supplied key (Account page) overrides the embedded one.
+      const apiKey = localStorage.getItem('ma_api_key') || EMBEDDED_API_KEY
+      // Real analysis by default; demo only when explicitly enabled or no key.
+      const demoMode = localStorage.getItem('ma_demo_mode') === 'true' || !apiKey
 
       if (demoMode) {
         await new Promise(r => setTimeout(r, 2000))
@@ -20,7 +29,13 @@ export function useClaudeAnalysis() {
       }
 
       const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true })
-      const base64 = base64DataUrl.split(',')[1]
+
+      // Derive the real media type from the data URL so uploaded PNG/WebP/GIF
+      // images work, not just JPEG captures from the camera.
+      const match = /^data:([^;]+);base64,(.*)$/s.exec(base64DataUrl)
+      const detectedType = match?.[1]
+      const mediaType = SUPPORTED_MEDIA.includes(detectedType) ? detectedType : 'image/jpeg'
+      const base64 = match?.[2] ?? base64DataUrl.split(',')[1]
 
       const response = await client.messages.create({
         model: 'claude-opus-4-8',
@@ -30,7 +45,7 @@ export function useClaudeAnalysis() {
           content: [
             {
               type: 'image',
-              source: { type: 'base64', media_type: 'image/jpeg', data: base64 },
+              source: { type: 'base64', media_type: mediaType, data: base64 },
             },
             { type: 'text', text: PROMPTS[region] || PROMPTS.face },
           ],

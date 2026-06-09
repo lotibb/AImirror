@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useCamera } from '../hooks/useCamera'
 import { useClaudeAnalysis } from '../hooks/useClaudeAnalysis'
 import { REGIONS } from '../constants/prompts'
@@ -12,12 +12,25 @@ export default function ScanPage() {
   const [analysisResult, setAnalysisResult] = useState(null)
   const { videoRef, error: cameraError, start, stop, capture } = useCamera()
   const { analyze, error: analysisError } = useClaudeAnalysis()
+  const fileInputRef = useRef(null)
 
   const regionLabel = REGIONS.find(r => r.id === selectedRegion)?.label || 'Face'
 
   const handleOpenCamera = async () => {
     setPhase('camera')
     await start()
+  }
+
+  const handleUpload = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      setCapturedImage(ev.target.result)
+      setPhase('preview')
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
   }
 
   const handleCapture = () => {
@@ -27,10 +40,9 @@ export default function ScanPage() {
     setPhase('preview')
   }
 
-  const handleRetake = async () => {
+  const handleRetake = () => {
     setCapturedImage(null)
-    setPhase('camera')
-    await start()
+    setPhase('idle')
   }
 
   const handleAnalyze = async () => {
@@ -53,8 +65,8 @@ export default function ScanPage() {
   // Full-screen camera overlay
   if (phase === 'camera') {
     return (
-      <div className="fixed inset-0 bg-black z-50 flex flex-col" style={{ maxWidth: 430, left: '50%', transform: 'translateX(-50%)' }}>
-        <div className="flex items-center justify-between px-4 pt-12 pb-3">
+      <div className="camera-overlay bg-black">
+        <div className="flex items-center justify-between px-4 pb-3 safe-top">
           <button onClick={() => { stop(); setPhase('idle') }} className="text-white p-1">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -99,9 +111,9 @@ export default function ScanPage() {
 
   if (phase === 'preview') {
     return (
-      <div className="fixed inset-0 bg-black z-50 flex flex-col" style={{ maxWidth: 430, left: '50%', transform: 'translateX(-50%)' }}>
-        <div className="flex items-center justify-between px-4 pt-12 pb-3">
-          <button onClick={handleRetake} className="text-white text-sm font-medium px-2 py-1">Retake</button>
+      <div className="camera-overlay bg-black">
+        <div className="flex items-center justify-between px-4 pb-3 safe-top">
+          <button onClick={handleRetake} className="text-white text-sm font-medium px-2 py-1">← Back</button>
           <span className="text-white font-medium text-sm">Preview</span>
           <div className="w-16" />
         </div>
@@ -122,7 +134,7 @@ export default function ScanPage() {
 
   if (phase === 'analyzing') {
     return (
-      <div className="fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center gap-4" style={{ maxWidth: 430, left: '50%', transform: 'translateX(-50%)' }}>
+      <div className="camera-overlay bg-black/90 items-center justify-center gap-4">
         <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         <p className="text-white font-semibold">Analyzing {regionLabel}...</p>
         <p className="text-white/40 text-xs">Powered by Claude AI</p>
@@ -147,19 +159,19 @@ export default function ScanPage() {
   // Idle
   return (
     <div className="min-h-full bg-gray-50">
-      <div className="bg-primary px-5 pt-12 pb-6">
+      <div className="bg-primary px-5 pb-4 safe-top">
         <h1 className="text-white text-xl font-bold">New Scan</h1>
         <p className="text-white/70 text-sm mt-1">Choose a region and open the camera</p>
       </div>
 
-      <div className="px-4 py-5 space-y-5">
+      <div className="px-4 py-4 space-y-4">
         <div>
           <h2 className="font-semibold text-dark text-sm mb-3">Scan Region</h2>
           <RegionSelector selected={selectedRegion} onChange={setSelectedRegion} />
         </div>
 
         {/* Camera preview placeholder */}
-        <div className="bg-dark rounded-2xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
+        <div className="bg-dark rounded-2xl overflow-hidden h-48">
           <div className="w-full h-full flex flex-col items-center justify-center gap-3">
             <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
               <svg className="w-8 h-8 text-white/50" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -177,12 +189,28 @@ export default function ScanPage() {
           </div>
         )}
 
-        <button
-          onClick={handleOpenCamera}
-          className="w-full py-4 bg-primary text-white font-semibold rounded-2xl text-sm shadow-sm active:opacity-80"
-        >
-          Open Camera
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={handleOpenCamera}
+            className="flex-1 py-4 bg-primary text-white font-semibold rounded-2xl text-sm shadow-sm active:opacity-80"
+          >
+            Open Camera
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex-1 py-4 bg-white border border-gray-200 text-dark font-semibold rounded-2xl text-sm shadow-sm active:opacity-70"
+          >
+            Upload Photo
+          </button>
+        </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleUpload}
+        />
       </div>
     </div>
   )

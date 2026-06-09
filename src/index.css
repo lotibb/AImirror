@@ -10,18 +10,20 @@
 html, body {
   margin: 0;
   padding: 0;
-  height: 100%;
+  width: 100%;
+  min-height: 100dvh;
   background: #e5e7eb;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 body {
   display: flex;
   justify-content: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  align-items: flex-start;
 }
 
 #root {
-  width: 100%;
+  width: 100vw;
   max-width: 430px;
   height: 100dvh;
   display: flex;
@@ -29,7 +31,33 @@ body {
   background: white;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 0 60px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 500px) {
+  #root {
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.safe-top {
+  padding-top: max(env(safe-area-inset-top), 16px);
+}
+
+.camera-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 500px) {
+  .camera-overlay {
+    left: 50% !important;
+    right: auto !important;
+    width: 430px;
+    transform: translateX(-50%);
+  }
 }
 
 .scrollbar-hide::-webkit-scrollbar {

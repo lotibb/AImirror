@@ -23,9 +23,20 @@ const TREND_ARROW = {
 export default function HistoryPage() {
   const s = STATUS_STYLE[todayStatus] || STATUS_STYLE.watch
 
+  const monthScores = trend.map(t => t.score)
+  const monthAvg = Math.round(monthScores.reduce((a, b) => a + b, 0) / monthScores.length)
+  const goodDays = monthScores.filter(s => s >= 75).length
+  const watchDays = monthScores.filter(s => s >= 65 && s < 75).length
+  const alertDays = monthScores.filter(s => s < 65).length
+  const totalScans = monthScores.length
+  const goodPct = Math.round((goodDays / totalScans) * 100)
+  const watchPct = Math.round((watchDays / totalScans) * 100)
+  const alertPct = 100 - goodPct - watchPct
+  const ms = STATUS_STYLE[monthAvg >= 75 ? 'good' : monthAvg >= 65 ? 'watch' : 'alert']
+
   return (
     <div className="min-h-full bg-gray-50">
-      <div className="bg-primary px-5 pt-12 pb-5">
+      <div className="bg-primary px-5 pb-4 safe-top">
         <h1 className="text-white font-bold text-xl">Health Report</h1>
         <p className="text-white/70 text-sm mt-1">Aggregated from all your scans</p>
       </div>
@@ -42,6 +53,39 @@ export default function HistoryPage() {
             <div className={`w-2.5 h-2.5 rounded-full ${s.dot}`} />
             <span className={`text-sm font-semibold ${s.text}`}>{s.label}</span>
             <span className="text-gray-400 text-xs">— based on today's scan</span>
+          </div>
+        </div>
+
+        {/* Monthly Score */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] text-gray-400 uppercase tracking-widest font-medium">May 2026 · Monthly Overview</p>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${ms.bg} ${ms.text}`}>{ms.label}</span>
+          </div>
+          <div className="flex items-baseline gap-1.5 mb-3">
+            <span className={`text-3xl font-bold ${ms.text}`}>{monthAvg}</span>
+            <span className="text-gray-300 text-base">/100</span>
+            <span className="text-xs text-gray-400 ml-1">monthly avg</span>
+          </div>
+          <div className="rounded-full overflow-hidden h-2.5 mb-2 flex">
+            {goodPct > 0 && <div style={{ width: `${goodPct}%` }} className="bg-accent" />}
+            {watchPct > 0 && <div style={{ width: `${watchPct}%` }} className="bg-amber-400" />}
+            {alertPct > 0 && <div style={{ width: `${alertPct}%` }} className="bg-red-400" />}
+          </div>
+          <div className="flex items-center gap-3 mt-1.5">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-accent" />
+              <span className="text-[10px] text-gray-500">{goodPct}% good</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-amber-400" />
+              <span className="text-[10px] text-gray-500">{watchPct}% watch</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-red-400" />
+              <span className="text-[10px] text-gray-500">{alertPct}% alert</span>
+            </div>
+            <span className="text-[10px] text-gray-400 ml-auto">{totalScans} scans</span>
           </div>
         </div>
 

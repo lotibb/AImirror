@@ -22,7 +22,7 @@ export default function HomePage() {
   return (
     <div className="min-h-full bg-gray-50">
       {/* Header */}
-      <div className="bg-primary px-5 pt-12 pb-6">
+      <div className="bg-primary px-5 pb-4 safe-top">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-white/70 text-sm">Good morning,</p>

@@ -59,7 +59,7 @@ export default function CalendarPage() {
 
   return (
     <div className="min-h-full bg-gray-50">
-      <div className="bg-primary px-5 pt-12 pb-5">
+      <div className="bg-primary px-5 pb-4 safe-top">
         <h1 className="text-white font-bold text-xl">Calendar</h1>
         <p className="text-white/70 text-sm mt-1">Daily scan results</p>
       </div>
